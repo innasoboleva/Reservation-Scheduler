@@ -28,7 +28,8 @@ class Reservation(db.Model):
 
     __tablename__ = "reservations"
 
-    reservation_id = db.Column(db.Integer, primary_key=True, autoincrement=True, server_default=text("nextval('user_id_seq')"))
+    reservation_id = db.Column(db.Integer, primary_key=True, autoincrement=True, server_default=text("nextval('reservation_id_seq')"))
+    user_email = db.Column(db.String, db.ForeignKey("users.email"), nullable=False)
     date = db.Column(db.Date)
 
     user = db.relationship("User", back_populates="reservations")

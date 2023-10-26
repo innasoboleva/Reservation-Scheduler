@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+Melon Tasting
+{% endblock %}
+
+{% block body %}
+<h1>Welcome</h1>
+
+<!-- Building React components here: index page -->
+<div class="container-fluid">
+    <div id="react-container"></div>
+</div>
+
+
+{% endblock %}
+
+{% block js %}
+<script src="/static/jsx/index.jsx" type="text/jsx"></script>
+<script src="/static/jsx/App.jsx" type="text/jsx"></script>
+
+
+{% endblock %}
