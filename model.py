@@ -30,7 +30,7 @@ class Reservation(db.Model):
 
     reservation_id = db.Column(db.Integer, primary_key=True, autoincrement=True, server_default=text("nextval('reservation_id_seq')"))
     user_email = db.Column(db.String, db.ForeignKey("users.email"), nullable=False)
-    date = db.Column(db.Date)
+    date = db.Column(db.DateTime)
 
     user = db.relationship("User", back_populates="reservations")
 

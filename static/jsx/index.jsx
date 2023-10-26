@@ -22,6 +22,29 @@ function IndexPageContainer() {
         }
    }, []);
 
+   const submitForm = (ev) => {
+        ev.preventDefault();
+
+        const formInputs = {
+            "day": pickedDay ? pickedDay : new Date(),
+            "start": document.querySelector("#start-time").value,
+            "end": document.querySelector("#end-time").value,
+        }
+
+        fetch('/api/submit_form', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formInputs),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status == "success") {
+                
+            }
+        })
+        .catch(error => console.error('Error sending form', error));
+    }
+
     return (
         <React.Fragment>
             <form>
@@ -38,12 +61,11 @@ function IndexPageContainer() {
                     <label htmlFor="start-time">
                         Enter an optional time range and we will only show appointments in that range
                     </label>
-                    <input type="time" name="start-time" step="30" requitred />
-                    <input type="time" name="end-time" step="30" required/>
+                    <input id="start-time" type="time" name="start-time" step="30" required />
+                    <input id="end-time" type="time" name="end-time" step="30" required/>
 
                 </div>
-              
-                <button type="submit" id="search-time-btn">Search</button>
+                <button onClick={submitForm} id="search-time-btn">Search</button>
                 
             </form>
         </React.Fragment>

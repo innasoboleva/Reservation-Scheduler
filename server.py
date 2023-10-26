@@ -1,8 +1,9 @@
 from flask import Flask, render_template, jsonify, request, session, redirect
 from model import connect_to_db , db, User, Reservation
 import crud
-from datetime import datetime
+from datetime import datetime, time
 import os
+from dateutil import parser
 
 
 app = Flask(__name__)
@@ -39,6 +40,24 @@ def homepage():
     else:
         return redirect("/login")
     
+
+@app.route("/api/submit_form", methods=["POST"])
+def check_date():
+    """Checks user's input, date and time"""
+    data = request.get_json()
+    day = data.get("day")
+    parsed_day = parser.parse(day)
+    
+    new_datetime = datetime.combine(parsed_day.date(), time(14,0))
+    
+    start_time = data.get("start")
+    end_time = data.get("end")
+    print(data)
+    if start_time and end_time:
+        time_list = crud.get_time(start_time, end_time)
+        print(time_list)
+      
+    return jsonify({ "status": "success" })
 
 
 if __name__ == "__main__":
