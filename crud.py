@@ -1,10 +1,10 @@
 from model import User, Reservation
 from datetime import datetime, time, timedelta
 from dateutil import parser
-from sqlalchemy import and_
+from sqlalchemy import and_, extract
 
 def check_user_login(email, password):
-    """Checks if email and password are correct"""
+    """Checks if email and password are correct."""
 
     user = User.query.get(email)
     if user and user.password == password:
@@ -14,7 +14,7 @@ def check_user_login(email, password):
     
 
 def get_time(start, end):
-    """Converts time to a list while getting it to a closer 20-min span (30 min) or (00 min)"""
+    """Converts time to tuple while getting it to a closer 20-min span (30 min) or (00 min)."""
 
     s_time = start.split(':')
     e_time = end.split(':')
@@ -31,31 +31,8 @@ def get_time(start, end):
     return { "start": (s_time[0], start_time_return), "end": (e_time[0], end_time_return) }
 
 
-def get_available_times(day, start, end):
-    """Returns all available times for this period except already booked ones"""
-    result = []
-    parsed_day = parser.parse(day)
-    all_available_times = []
-    time_list = get_time(start, end)
-    if time_list:
-        s = time_list['start']
-        e = time_list['end']
-        all_available_times = get_times(parsed_day, s, e)
-
-    start_datetime = datetime.combine(parsed_day.date(), time(int(start[0:2]),int(start[3:5])))
-    end_datetime = datetime.combine(parsed_day.date(), time(int(end[0:2]),int(end[3:5])))
-   
-    list_of_booked = set([reservation.date.replace(second=0) for reservation in Reservation.query.filter(and_(Reservation.date > start_datetime, Reservation.date < end_datetime)).all()])
-    
-    for each_time in all_available_times:
-        if each_time not in list_of_booked:
-            print(each_time)
-            result.append(each_time.time())
-
-    return result
-
 def get_times(day, start, end):
-    """Returns all available times for this period"""
+    """Returns all available times for this period."""
 
     start_time = time(int(start[0]), int(start[1]))
     end_time = time(int(end[0]), int(end[1]))
@@ -72,4 +49,41 @@ def get_times(day, start, end):
             return all_times
 
     return all_times
+
+
+def get_available_times(day, start, end, user_email):
+    """Returns all available times for this period except already booked ones."""
+
+    result = []
+    parsed_day = parser.parse(day)
+
+    # check if user alredy booked this day
+    previous_reservation = Reservation.query.filter(
+        extract("year", Reservation.date) == parsed_day.year,
+        extract("month", Reservation.date) == parsed_day.month,
+        extract("day", Reservation.date) == parsed_day.day,
+        Reservation.user_email == user_email
+    ).first()
+    print(previous_reservation)
+    if previous_reservation:
+        return { "status": "error", "message": "You already booked this day!"}
+    
+    # if user can book this day
+    all_available_times = []
+    time_list = get_time(start, end)
+    if time_list:
+        s = time_list['start']
+        e = time_list['end']
+        all_available_times = get_times(parsed_day, s, e)
+
+    start_datetime = datetime.combine(parsed_day.date(), time(int(start[0:2]),int(start[3:5])))
+    end_datetime = datetime.combine(parsed_day.date(), time(int(end[0:2]),int(end[3:5])))
+   
+    list_of_booked = set([reservation.date.replace(second=0) for reservation in Reservation.query.filter(and_(Reservation.date > start_datetime, Reservation.date < end_datetime)).all()])
+    
+    for each_time in all_available_times:
+        if each_time not in list_of_booked:
+            result.append(each_time.time())
+    # returns list of available times
+    return { "status": "success", "result": result }
 

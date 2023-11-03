@@ -1,9 +1,9 @@
 from flask import Flask, render_template, jsonify, request, session, redirect
-from model import connect_to_db , db, User, Reservation
 import crud
-from datetime import datetime, time
+from datetime import datetime
 import os
 from dateutil import parser
+from model import connect_to_db , db, Reservation
 
 
 app = Flask(__name__)
@@ -31,7 +31,7 @@ def check_login():
 
 @app.route("/")
 def homepage():
-    """Show index page or login page if user not loged in."""
+    """Show index page or login page if user not logged in."""
 
     user = session.get('user_id')
     print("User: ", user)
@@ -43,16 +43,23 @@ def homepage():
 
 @app.route("/api/submit_form", methods=["POST"])
 def check_date():
-    """Checks user's input, date and time"""
+    """Checks user's input, date and time."""
+
     data = request.get_json()
     day = data.get("day")
     start_time = data.get("start")
     end_time = data.get("end")
+    user_email = session.get("user_id")
 
-    result = crud.get_available_times(day, start_time, end_time)
-    times_as_strings = [time.strftime('%H:%M') for time in result]
-      
-    return jsonify({ "status": "success", "times": times_as_strings, "day": day })
+    if user_email:
+        result = crud.get_available_times(day, start_time, end_time, user_email)
+        if result["status"] == "success":
+            times_as_strings = [time.strftime('%H:%M') for time in result["result"]]
+            return jsonify({ "status": "success", "times": times_as_strings, "day": day })
+        print(result)
+        return jsonify(result)
+    
+    return jsonify({ "status": "error"})
 
 
 @app.route("/api/book_time", methods=["POST"])
@@ -64,15 +71,13 @@ def book_time():
         data = request.get_json()
         time = data.get("time")
         day = data.get("day")
+        
         parsed_day = parser.parse(day)
         parsed_time = datetime.strptime(time, '%H:%M').time()
         date = datetime.combine(parsed_day, parsed_time)
-        print(date)
         new_reservation = Reservation.create(date, user)
-        print(new_reservation)
         db.add(new_reservation)
         db.commit()
-
       
     return jsonify({"status": "success"})
 

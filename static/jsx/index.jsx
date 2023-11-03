@@ -9,9 +9,13 @@ function MainPageContainer() {
         setShowTimePage(true);
     }
 
+    const handleBack = () => {
+        setShowTimePage(false);
+    }
+
     return (
         <React.Fragment>
-            {showTimePage ? <TimePage setShowTimePage={setShowTimePage} times={times} day={day}/> : <Scheduler showAvailableTimes={showAvailableTimes} />}
+            {showTimePage ? <TimePage setShowTimePage={setShowTimePage} handleBack={handleBack} times={times} day={day}/> : <Scheduler showAvailableTimes={showAvailableTimes} />}
         </React.Fragment>
         )
 }
@@ -64,6 +68,7 @@ function Scheduler(props) {
             }
             else {
                 console.log(data)
+                document.querySelector("#error-message").innerHTML = `<p>${data.message}</p>`;
             }
         })
         .catch(error => console.error('Error sending form', error));
@@ -72,6 +77,7 @@ function Scheduler(props) {
     return (
         <React.Fragment>
             <form>
+                <div id="error-message"></div>
                 <div className="element">
                     <label htmlFor="day">
                         Enter the date of the reservation you would like
@@ -99,7 +105,7 @@ function Scheduler(props) {
 
 function TimePage(props) {
 
-    const { setShowTimePage, times, day } = props;
+    const { setShowTimePage, times, day, handleBack } = props;
 
     const handleTimeSelection = (selectedTime) => {
         console.log("Selected time:", selectedTime);
@@ -128,6 +134,9 @@ function TimePage(props) {
                         {time}
                     </button>
                 ))}
+            </div>
+            <div>
+                <button onClick={handleBack}>Back</button>
             </div>
         </React.Fragment>
     )
