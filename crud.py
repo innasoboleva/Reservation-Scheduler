@@ -1,6 +1,7 @@
 from model import User, Reservation
 from datetime import datetime, time, timedelta
 from dateutil import parser
+from sqlalchemy import and_
 
 def check_user_login(email, password):
     """Checks if email and password are correct"""
@@ -41,16 +42,15 @@ def get_available_times(day, start, end):
         e = time_list['end']
         all_available_times = get_times(parsed_day, s, e)
 
-    start_datetime = datetime.combine(parsed_day.date(), time(int(start[0]),int(start[1])))
-    end_datetime = datetime.combine(parsed_day.date(), time(int(end[0]),int(end[1])))
-
-    list_of_booked = Reservation.query.filter(Reservation.date > start_datetime, Reservation.date < end_datetime).all()
-    list_of_booked_set = set(list_of_booked)
-    print(list_of_booked)
+    start_datetime = datetime.combine(parsed_day.date(), time(int(start[0:2]),int(start[3:5])))
+    end_datetime = datetime.combine(parsed_day.date(), time(int(end[0:2]),int(end[3:5])))
+   
+    list_of_booked = set([reservation.date.replace(second=0) for reservation in Reservation.query.filter(and_(Reservation.date > start_datetime, Reservation.date < end_datetime)).all()])
+    
     for each_time in all_available_times:
-        if each_time not in list_of_booked_set:
+        if each_time not in list_of_booked:
+            print(each_time)
             result.append(each_time.time())
-    print(result)
 
     return result
 
@@ -64,13 +64,12 @@ def get_times(day, start, end):
     current_time = datetime.combine(day, start_time)
 
     while current_time.time() <= end_time or start_time > end_time:
-        # all_times.append((current_time.time()))
         all_times.append(current_time)
         
         current_time += timedelta(minutes=30)
        
         if current_time.time() < start_time:
-            current_time = datetime.combine(current_time.date() + timedelta(days=1), time(0, 0))
+            return all_times
 
-    print(all_times)
     return all_times
+

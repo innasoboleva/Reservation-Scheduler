@@ -1,15 +1,17 @@
 function MainPageContainer() {
     const [showTimePage, setShowTimePage] = React.useState(false);
     const [times, setTimes] = React.useState([]);
+    const [day, setDay] = React.useState(null);
 
-    const showAvailableTimes = (times) => {
+    const showAvailableTimes = (times, day) => {
         setTimes(times);
+        setDay(day);
         setShowTimePage(true);
     }
 
     return (
         <React.Fragment>
-            {showTimePage ? <TimePage setShowTimePage={setShowTimePage} times={times} /> : <Scheduler showAvailableTimes={showAvailableTimes} />}
+            {showTimePage ? <TimePage setShowTimePage={setShowTimePage} times={times} day={day}/> : <Scheduler showAvailableTimes={showAvailableTimes} />}
         </React.Fragment>
         )
 }
@@ -58,7 +60,7 @@ function Scheduler(props) {
         .then(data => {
             if (data.status == "success") {
                 console.log("Success");
-                showAvailableTimes(data.times);
+                showAvailableTimes(data.times, data.day);
             }
             else {
                 console.log(data)
@@ -97,11 +99,24 @@ function Scheduler(props) {
 
 function TimePage(props) {
 
-    const { setShowTimePage, times } = props;
+    const { setShowTimePage, times, day } = props;
 
     const handleTimeSelection = (selectedTime) => {
         console.log("Selected time:", selectedTime);
-        setShowTimePage(false);
+
+        fetch('/api/book_time', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({"time" : selectedTime, "day": day }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status == "success") {
+                setShowTimePage(false);
+            }
+        })
+        .catch(error => console.error('Error booking a date ', selectedTime, error));
+
     };
 
     return (

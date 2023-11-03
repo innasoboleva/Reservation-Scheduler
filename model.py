@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
+from sqlalchemy import text, DateTime
 from datetime import datetime
 
 db = SQLAlchemy()
@@ -30,17 +30,17 @@ class Reservation(db.Model):
 
     reservation_id = db.Column(db.Integer, primary_key=True, autoincrement=True, server_default=text("nextval('reservation_id_seq')"))
     user_email = db.Column(db.String, db.ForeignKey("users.email"), nullable=False)
-    date = db.Column(db.DateTime)
+    date = db.Column(DateTime)
 
     user = db.relationship("User", back_populates="reservations")
 
     @classmethod
-    def create(cls, date,user):
+    def create(cls, date, user):
          """ Create and return a new user reservation instance"""
          return cls(date=date, user=user)
 
     def __repr__(self):
-        return f"<Reservations id={self.reservation_id} date={self.date}>"
+        return f"<Reservations id={self.reservation_id} date={self.date} >"
     
 
 

@@ -46,25 +46,35 @@ def check_date():
     """Checks user's input, date and time"""
     data = request.get_json()
     day = data.get("day")
-    # parsed_day = parser.parse(day)
-    
-   
-    # new_datetime = datetime.combine(parsed_day.date(), time(14,0))
-    
     start_time = data.get("start")
     end_time = data.get("end")
-    print(data)
-    # if start_time and end_time:
-    #     time_list = crud.get_time(start_time, end_time)
-    #     if time_list:
-    #         s = time_list['start']
-    #         e = time_list['end']
-    #         crud.get_times(s,e)
 
     result = crud.get_available_times(day, start_time, end_time)
     times_as_strings = [time.strftime('%H:%M') for time in result]
       
-    return jsonify({ "status": "success", "times": times_as_strings })
+    return jsonify({ "status": "success", "times": times_as_strings, "day": day })
+
+
+@app.route("/api/book_time", methods=["POST"])
+def book_time():
+    """Makes new reservation for picked time, returns success status if created."""
+    
+    user = session.get("user_id")
+    if user:
+        data = request.get_json()
+        time = data.get("time")
+        day = data.get("day")
+        parsed_day = parser.parse(day)
+        parsed_time = datetime.strptime(time, '%H:%M').time()
+        date = datetime.combine(parsed_day, parsed_time)
+        print(date)
+        new_reservation = Reservation.create(date, user)
+        print(new_reservation)
+        db.add(new_reservation)
+        db.commit()
+
+      
+    return jsonify({"status": "success"})
 
 
 if __name__ == "__main__":
