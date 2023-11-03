@@ -3,7 +3,7 @@ function App() {
     return (
         <ReactRouterDOM.BrowserRouter>
             <ReactRouterDOM.Switch>
-                <ReactRouterDOM.Route exact path="/" component={IndexPageContainer}>
+                <ReactRouterDOM.Route exact path="/" component={MainPageContainer}>
                     
                 </ReactRouterDOM.Route>
             </ReactRouterDOM.Switch>

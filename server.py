@@ -46,18 +46,25 @@ def check_date():
     """Checks user's input, date and time"""
     data = request.get_json()
     day = data.get("day")
-    parsed_day = parser.parse(day)
+    # parsed_day = parser.parse(day)
     
-    new_datetime = datetime.combine(parsed_day.date(), time(14,0))
+   
+    # new_datetime = datetime.combine(parsed_day.date(), time(14,0))
     
     start_time = data.get("start")
     end_time = data.get("end")
     print(data)
-    if start_time and end_time:
-        time_list = crud.get_time(start_time, end_time)
-        print(time_list)
+    # if start_time and end_time:
+    #     time_list = crud.get_time(start_time, end_time)
+    #     if time_list:
+    #         s = time_list['start']
+    #         e = time_list['end']
+    #         crud.get_times(s,e)
+
+    result = crud.get_available_times(day, start_time, end_time)
+    times_as_strings = [time.strftime('%H:%M') for time in result]
       
-    return jsonify({ "status": "success" })
+    return jsonify({ "status": "success", "times": times_as_strings })
 
 
 if __name__ == "__main__":
